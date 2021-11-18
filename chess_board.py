@@ -183,7 +183,7 @@ class PickAndPlace(object):
 
 
 
-def load_gazebo_models(table_pose, white_squares, black_squares, block_reference_frame):
+def load_gazebo_models(table_pose, white_squares, black_squares, table_reference_frame):
     # Get Models' Path
     model_path = rospkg.RosPack().get_path('baxter_sim_examples')+"/models/"
     # Load Table SDF
@@ -219,35 +219,35 @@ def load_gazebo_models(table_pose, white_squares, black_squares, block_reference
     except rospy.ServiceException, e:
         rospy.logerr("Spawn SDF service call failed: {0}".format(e))
     
-# SPAWINING WHITE BLOCKS
+# SPAWINING WHITE Squares
     for square in white_squares:
         rospy.wait_for_service('/gazebo/spawn_urdf_model')
         try:
             spawn_urdf = rospy.ServiceProxy('/gazebo/spawn_urdf_model', SpawnModel)
-            resp_urdf = spawn_urdf(("w_block_" + str(i)), white_square_xml, "/",
+            resp_urdf = spawn_urdf(("w_square_" + str(i)), white_square_xml, "/",
                                    white_squares[i], block_reference_frame)
         except rospy.ServiceException, e:
             rospy.logerr("Spawn URDF service call failed: {0}".format(e))
 
 
 
-def delete_gazebo_models():
+def delete_gazebo_models(white_squares, black_squares):
     # This will be called on ROS Exit, deleting Gazebo models
     # Do not wait for the Gazebo Delete Model service, since
     # Gazebo should already be running. If the service is not
     # available since Gazebo has been killed, it is fine to error out
-    try:
-        delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
-
-        resp_delete = delete_model("cafe_table")
-
-	resp_delete = delete_model("w_block_1")
-        resp_delete = delete_model("w_block_2")
-
-        resp_delete = delete_model("b_block_1")
-        resp_delete = delete_model("b_block_2")
-    except rospy.ServiceException, e:
-        rospy.loginfo("Delete Model service call failed: {0}".format(e))
+    for i in range(len(white_squares)):
+        try:
+            delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
+            resp_delete = delete_model("w_square_" + str(i))
+        except rospy.ServiceException, e:
+            rospy.loginfo("Delete Model service call failed: {0}".format(e))
+    for i in range(len(black_squares)):
+        try:
+            delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
+            resp_delete = delete_model("b_square_" + str(i))
+        except rospy.ServiceException, e:
+            rospy.loginfo("Delete Model service call failed: {0}".format(e))
 
 def main():
     """RSDK Inverse Kinematics Pick and Place Example
@@ -265,27 +265,26 @@ def main():
     """
 
     # defining models
-    block_reference_frame = "world"
+    table_reference_frame = "world"
     table_pose = Pose(position=Point(x=1.0, y=0.0, z=0.0))
     table_len = 0.913
     block_len = table_len / 8
-    start_x = table_len / 2
-    start_y = start_x - table_len / 2
-    table_reference_frame = "world",
+    start_x = table_len / 2 + block_len
+    start_y = block_len/2 - table_len/2
     white_squares = []
     black_squares = []
     white_pieces = []
     black_pieces = []
     for i in range(4):
-        white_squares.append(Pose(position=Point(x=start_x, y=start_y + i * 2 * block_len, z=0.77)))
-        black_squares.append(Pose(position=Point(x=start_x, y=block_en + start_y + i * 2 * block_len, z=0.77)))
+        white_squares.append(Pose(position=Point(x=start_x, y=start_y + i * 2 * block_len, z=0.8)))
+        black_squares.append(Pose(position=Point(x=start_x, y=block_len + start_y + i * 2 * block_len, z=0.8)))
     rospy.init_node("ik_pick_and_place_demo")
     # Load Gazebo Models via Spawning Services
     # Note that the models reference is the /world frame
     # and the IK operates with respect to the /base frame
-    load_gazebo_models(table_pose, white_squares, [], "world")
+    load_gazebo_models(table_pose, white_squares, black_squares, block_reference_frame, table_reference_frame)
     # Remove models from the scene on shutdown
-    rospy.on_shutdown(delete_gazebo_models)
+    rospy.on_shutdown(delete_gazebo_models(white_squares, black_squares))
 
     # Wait for the All Clear from emulator startup
     rospy.wait_for_message("/robot/sim/started", Empty)
