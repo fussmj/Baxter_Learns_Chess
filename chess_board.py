@@ -183,7 +183,7 @@ class PickAndPlace(object):
 
 
 
-def load_gazebo_models(table_pose, white_squares, black_squares, white_pieces, black_pieces,table_reference_frame):
+def load_gazebo_models(table_pose, white_squares, black_squares, white_pieces, black_pieces, block_reference_frame, table_reference_frame):
     # Get Models' Path
     model_path = rospkg.RosPack().get_path('baxter_sim_examples')+"/models/"
     # Load Table SDF
@@ -203,12 +203,12 @@ def load_gazebo_models(table_pose, white_squares, black_squares, white_pieces, b
     # Load White Square URDF
     white_square_xml = ''
     with open(model_path + "white_square/model.urdf", "r") as block_file:
-        black_block_xml = block_file.read().replace('\n', '')
+        white_square_xml = block_file.read().replace('\n', '')
 
     # Load Black Square URDF
     black_square_xml = ''
     with open(model_path + "black_square/model.urdf", "r") as block_file:
-        black_block_xml = block_file.read().replace('\n', '')
+        black_square_xml = block_file.read().replace('\n', '')
 
     # Spawn Table SDF
     rospy.wait_for_service('/gazebo/spawn_sdf_model')
@@ -219,19 +219,58 @@ def load_gazebo_models(table_pose, white_squares, black_squares, white_pieces, b
     except rospy.ServiceException, e:
         rospy.logerr("Spawn SDF service call failed: {0}".format(e))
     
-# SPAWINING WHITE Squares
-    for square in white_squares:
+# SPAWNING White Squares
+    for i in range(len(white_squares)):
+	square = white_squares[i]
+	name = "w_square_" + str(i)
         rospy.wait_for_service('/gazebo/spawn_urdf_model')
         try:
             spawn_urdf = rospy.ServiceProxy('/gazebo/spawn_urdf_model', SpawnModel)
-            resp_urdf = spawn_urdf(("w_square_" + str(i)), white_square_xml, "/",
-                                   white_squares[i], block_reference_frame)
+            resp_urdf = spawn_urdf(name, white_square_xml, "/",
+                                   square, block_reference_frame)
+        except rospy.ServiceException, e:
+            rospy.logerr("Spawn URDF service call failed: {0}".format(e))
+
+# SPAWNING Black Squares
+    for i in range(len(black_squares)):
+	square = black_squares[i]
+	name = "b_square_" + str(i)
+        rospy.wait_for_service('/gazebo/spawn_urdf_model')
+        try:
+            spawn_urdf = rospy.ServiceProxy('/gazebo/spawn_urdf_model', SpawnModel)
+            resp_urdf = spawn_urdf(name, black_square_xml, "/",
+                                   square, block_reference_frame)
+        except rospy.ServiceException, e:
+            rospy.logerr("Spawn URDF service call failed: {0}".format(e))
+
+# SPAWNING White Blocks
+    for i in range(len(white_pieces)):
+	square = white_pieces[i]
+	name = "w_piece_" + str(i)
+        rospy.wait_for_service('/gazebo/spawn_urdf_model')
+        try:
+            spawn_urdf = rospy.ServiceProxy('/gazebo/spawn_urdf_model', SpawnModel)
+            resp_urdf = spawn_urdf(name, white_block_xml, "/",
+                                   square, block_reference_frame)
+        except rospy.ServiceException, e:
+            rospy.logerr("Spawn URDF service call failed: {0}".format(e))
+
+# SPAWNING Black Blocks
+    for i in range(len(black_pieces)):
+	square = black_pieces[i]
+	name = "b_piece_" + str(i)
+        rospy.wait_for_service('/gazebo/spawn_urdf_model')
+        try:
+            spawn_urdf = rospy.ServiceProxy('/gazebo/spawn_urdf_model', SpawnModel)
+            resp_urdf = spawn_urdf(name, black_block_xml, "/",
+                                   square, block_reference_frame)
         except rospy.ServiceException, e:
             rospy.logerr("Spawn URDF service call failed: {0}".format(e))
 
 
 
-def delete_gazebo_models(white_squares, black_squares):
+def delete_gazebo_models(white_squares, black_squares, white_pieces, black_pieces):
+    """
     # This will be called on ROS Exit, deleting Gazebo models
     # Do not wait for the Gazebo Delete Model service, since
     # Gazebo should already be running. If the service is not
@@ -269,6 +308,7 @@ def delete_gazebo_models(white_squares, black_squares):
         resp_delete = delete_model("cafe_table" + str(i))
     except rospy.ServiceException, e:
         rospy.loginfo("Delete Model service call failed: {0}".format(e))
+    """
 
 def main():
     """RSDK Inverse Kinematics Pick and Place Example
@@ -285,39 +325,45 @@ def main():
     the loop.
     """
 
+    x_ref = 0.570617
+    y_ref = -0.427969
+    z_ref = 0.800990
+
     # defining models
-    table_reference_frame = "world"
+    table_reference_frame="world"
+    block_reference_frame = "world"
     table_pose = Pose(position=Point(x=1.0, y=0.0, z=0.0))
     table_len = 0.913
     block_len = table_len / 8
     start_x = table_len / 2 + block_len
-    start_y = block_len/2 - table_len/2
+    start_y = - table_len / 2 + block_len/4
+    table_reference_frame = "world",
     white_squares = []
     black_squares = []
     white_pieces = []
     black_pieces = []
     for j in range(8):
-        for i in range(4):
-            if j % 2 == 0:
-                add = 0
-            else:
-                add = block_len
-            white_squares.append(Pose(position=Point(x=start_x + (j * block_len), y=add + start_y + i * 2 * block_len, z=0.8)))
-            black_squares.append(Pose(position=Point(x=start_x + (j * block_len), y=block_len - add + start_y + i * 2 * block_len, z=0.8)))
+	for i in range(4):
+	    if j % 2 == 0:
+		add = 0
+	    else:
+		add = block_len
+            white_squares.append(Pose(position=Point(x=start_x + (j*block_len), y=add + start_y + i * 2 * block_len, z=0.757)))
+            black_squares.append(Pose(position=Point(x=start_x + (j*block_len), y=block_len - add + start_y + i * 2 * block_len, z=0.757)))
 
     for i in range(8):
-        white_pieces.append(Pose(position=Point(x=start_x, y=start_y + block_len/2 + i * block_len, z=0.8)))
-        white_pieces.append(Pose(position=Point(x=start_x + block_len, y=start_y + block_len / 2 + i * block_len, z=0.8)))
-        black_pieces.append(Pose(position=Point(x=start_x + 6 * block_len, y=start_y + block_len / 2 + i * block_len, z=0.8)))
-        black_pieces.append(Pose(position=Point(x=start_x + 7 * block_len, y=start_y + block_len / 2 + i * block_len, z=0.8)))
+	white_pieces.append(Pose(position=Point(x=start_x, y=start_y + i * block_len, z=0.8)))
+	white_pieces.append(Pose(position=Point(x=start_x + block_len, y=start_y + i * block_len, z=0.8)))
+	black_pieces.append(Pose(position=Point(x=start_x + 6*block_len, y=start_y + i * block_len, z=0.8)))
+	black_pieces.append(Pose(position=Point(x=start_x + 7*block_len, y=start_y + i * block_len, z=0.8)))
 
     rospy.init_node("ik_pick_and_place_demo")
     # Load Gazebo Models via Spawning Services
     # Note that the models reference is the /world frame
     # and the IK operates with respect to the /base frame
-    load_gazebo_models(table_pose, white_squares, black_squares, white_pieces, black_pieces, block_reference_frame, table_reference_frame)
+    load_gazebo_models(table_pose, white_squares, black_squares, white_pieces, black_pieces, "world", "world")
     # Remove models from the scene on shutdown
-    rospy.on_shutdown(delete_gazebo_models(white_squares, black_squares))
+    # rospy.on_shutdown(delete_gazebo_models(white_squares, black_squares, white_pieces, black_pieces))
 
     # Wait for the All Clear from emulator startup
     rospy.wait_for_message("/robot/sim/started", Empty)
@@ -344,24 +390,24 @@ def main():
     # You may wish to replace these poses with estimates
     # from a perception node.
     block_poses.append(Pose(
-        position=Point(x=0.7, y=0.15, z=-0.129),
+        position=Point(x=x_ref, y=y_ref + 3*block_len + block_len/4, z=-0.129),
         orientation=overhead_orientation))
     block_poses.append(Pose(
-        position=Point(x=0.7, y=0.05, z=-0.1),
+        position=Point(x=x_ref + 3*block_len, y=y_ref + 3*block_len + block_len/4, z=-0.129),
         orientation=overhead_orientation))
     block_poses.append(Pose(
-        position=Point(x=0.7, y=0.05, z=-0.1),
+        position=Point(x=x_ref + 3*block_len, y=y_ref + 3*block_len + block_len/4, z=-0.129),
         orientation=overhead_orientation))
     block_poses.append(Pose(
-        position=Point(x=0.7, y=0.15, z=-0.129),
+        position=Point(x=x_ref, y=y_ref + 3*block_len + block_len/4, z=-0.129),
         orientation=overhead_orientation))
+
     
-"""
     # Move to the desired starting angles
     pnp.move_to_start(starting_joint_angles)
     idx = 0
     while not rospy.is_shutdown():
-        print("\nPicking...")
+
         pnp.pick(block_poses[idx])
         print("\nPlacing...")
         idx = (idx+1) % len(block_poses)
@@ -372,8 +418,9 @@ def main():
         print("\nPlacing...")
         idx = (idx+1) % len(block_poses)
         pnp.place(block_poses[idx])
+
     return 0
-"""
 
 if __name__ == '__main__':
     sys.exit(main())
+
