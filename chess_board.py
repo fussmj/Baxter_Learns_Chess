@@ -248,6 +248,11 @@ def delete_gazebo_models(white_squares, black_squares):
             resp_delete = delete_model("b_square_" + str(i))
         except rospy.ServiceException, e:
             rospy.loginfo("Delete Model service call failed: {0}".format(e))
+    try:
+        delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
+        resp_delete = delete_model("cafe_table" + str(i))
+    except rospy.ServiceException, e:
+        rospy.loginfo("Delete Model service call failed: {0}".format(e))
 
 def main():
     """RSDK Inverse Kinematics Pick and Place Example
