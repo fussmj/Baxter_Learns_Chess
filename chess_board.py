@@ -183,7 +183,7 @@ class PickAndPlace(object):
 
 
 
-def load_gazebo_models(table_pose, white_squares, black_squares, table_reference_frame):
+def load_gazebo_models(table_pose, white_squares, black_squares, white_pieces, black_pieces,table_reference_frame):
     # Get Models' Path
     model_path = rospkg.RosPack().get_path('baxter_sim_examples')+"/models/"
     # Load Table SDF
@@ -237,19 +237,35 @@ def delete_gazebo_models(white_squares, black_squares):
     # Gazebo should already be running. If the service is not
     # available since Gazebo has been killed, it is fine to error out
     for i in range(len(white_squares)):
+        rospy.wait_for_service('/gazebo/delete_model')
+        delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
         try:
-            delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
             resp_delete = delete_model("w_square_" + str(i))
         except rospy.ServiceException, e:
             rospy.loginfo("Delete Model service call failed: {0}".format(e))
     for i in range(len(black_squares)):
+        rospy.wait_for_service('/gazebo/delete_model')
         try:
-            delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
             resp_delete = delete_model("b_square_" + str(i))
         except rospy.ServiceException, e:
             rospy.loginfo("Delete Model service call failed: {0}".format(e))
-    try:
+    for i in range(len(white_pieces)):
+        rospy.wait_for_service('/gazebo/delete_model')
         delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
+        try:
+            resp_delete = delete_model("w_block_" + str(i))
+        except rospy.ServiceException, e:
+            rospy.loginfo("Delete Model service call failed: {0}".format(e))
+    for i in range(len(black_pieces)):
+        rospy.wait_for_service('/gazebo/delete_model')
+        delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
+        try:
+            resp_delete = delete_model("b_block_" + str(i))
+        except rospy.ServiceException, e:
+            rospy.loginfo("Delete Model service call failed: {0}".format(e))
+
+    rospy.wait_for_service('/gazebo/delete_model')
+    try:
         resp_delete = delete_model("cafe_table" + str(i))
     except rospy.ServiceException, e:
         rospy.loginfo("Delete Model service call failed: {0}".format(e))
@@ -280,14 +296,26 @@ def main():
     black_squares = []
     white_pieces = []
     black_pieces = []
-    for i in range(4):
-        white_squares.append(Pose(position=Point(x=start_x, y=start_y + i * 2 * block_len, z=0.8)))
-        black_squares.append(Pose(position=Point(x=start_x, y=block_len + start_y + i * 2 * block_len, z=0.8)))
+    for j in range(8):
+        for i in range(4):
+            if j % 2 == 0:
+                add = 0
+            else:
+                add = block_len
+            white_squares.append(Pose(position=Point(x=start_x + (j * block_len), y=add + start_y + i * 2 * block_len, z=0.8)))
+            black_squares.append(Pose(position=Point(x=start_x + (j * block_len), y=block_len - add + start_y + i * 2 * block_len, z=0.8)))
+
+    for i in range(8):
+        white_pieces.append(Pose(position=Point(x=start_x, y=start_y + block_len/2 + i * block_len, z=0.8)))
+        white_pieces.append(Pose(position=Point(x=start_x + block_len, y=start_y + block_len / 2 + i * block_len, z=0.8)))
+        black_pieces.append(Pose(position=Point(x=start_x + 6 * block_len, y=start_y + block_len / 2 + i * block_len, z=0.8)))
+        black_pieces.append(Pose(position=Point(x=start_x + 7 * block_len, y=start_y + block_len / 2 + i * block_len, z=0.8)))
+
     rospy.init_node("ik_pick_and_place_demo")
     # Load Gazebo Models via Spawning Services
     # Note that the models reference is the /world frame
     # and the IK operates with respect to the /base frame
-    load_gazebo_models(table_pose, white_squares, black_squares, block_reference_frame, table_reference_frame)
+    load_gazebo_models(table_pose, white_squares, black_squares, white_pieces, black_pieces, block_reference_frame, table_reference_frame)
     # Remove models from the scene on shutdown
     rospy.on_shutdown(delete_gazebo_models(white_squares, black_squares))
 
