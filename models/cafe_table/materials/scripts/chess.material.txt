@@ -1,0 +1,13 @@
+material chessMat/Diffuse{
+  receive_shadows off
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture chess.png
+      }
+    }
+  }
+}
