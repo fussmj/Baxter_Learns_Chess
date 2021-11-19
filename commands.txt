@@ -1,0 +1,6 @@
+
+
+accelerated graphics fix
+    turn on accelerated graphics and then use
+    echo "export SVGA_VGPU10=0" >> ~/.bashrc
+

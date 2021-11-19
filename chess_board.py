@@ -30,6 +30,9 @@
 """
 Baxter RSDK Inverse Kinematics Pick and Place Demo
 """
+from modelClasses import load_gazebo_models, delete_gazebo_models
+from moveClasses import PickAndPlace
+from boardClasses import Board
 import argparse
 import struct
 import sys
@@ -194,7 +197,7 @@ def load_gazebo_models(table_pose, white_squares, black_squares, white_pieces, b
     white_block_xml = ''
     with open (model_path + "block_w/model.urdf", "r") as block_file:
         white_block_xml=block_file.read().replace('\n', '')
-	
+
     # Load Black Block URDF
     black_block_xml = ''
     with open (model_path + "block_b/model.urdf", "r") as block_file:
@@ -218,7 +221,7 @@ def load_gazebo_models(table_pose, white_squares, black_squares, white_pieces, b
                              table_pose, table_reference_frame)
     except rospy.ServiceException, e:
         rospy.logerr("Spawn SDF service call failed: {0}".format(e))
-    
+
 # SPAWNING White Squares
     for i in range(len(white_squares)):
 	square = white_squares[i]
@@ -324,38 +327,35 @@ def main():
     can improve on this demo by adding perception and feedback to close
     the loop.
     """
-
-    x_ref = 0.570617
-    y_ref = -0.427969
-    z_ref = 0.800990
-
     # defining models
     table_reference_frame="world"
     block_reference_frame = "world"
     table_pose = Pose(position=Point(x=1.0, y=0.0, z=0.0))
     table_len = 0.913
     block_len = table_len / 8
+    x_ref = 0.570617 + block_len/4
+    y_ref = -0.427969 + block_len/4
+    z_ref = 0.800990
     start_x = table_len / 2 + block_len
     start_y = - table_len / 2 + block_len/4
-    table_reference_frame = "world",
     white_squares = []
     black_squares = []
     white_pieces = []
     black_pieces = []
     for j in range(8):
-	for i in range(4):
-	    if j % 2 == 0:
-		add = 0
-	    else:
-		add = block_len
-            white_squares.append(Pose(position=Point(x=start_x + (j*block_len), y=add + start_y + i * 2 * block_len, z=0.757)))
-            black_squares.append(Pose(position=Point(x=start_x + (j*block_len), y=block_len - add + start_y + i * 2 * block_len, z=0.757)))
+        for i in range(4):
+            if j % 2 == 0:
+                add = 0
+            else:
+                add = block_len
+                white_squares.append(Pose(position=Point(x=start_x + (j*block_len), y=add + start_y + i * 2 * block_len, z=0.757)))
+                black_squares.append(Pose(position=Point(x=start_x + (j*block_len), y=block_len - add + start_y + i * 2 * block_len, z=0.757)))
 
     for i in range(8):
-	white_pieces.append(Pose(position=Point(x=start_x, y=start_y + i * block_len, z=0.8)))
-	white_pieces.append(Pose(position=Point(x=start_x + block_len, y=start_y + i * block_len, z=0.8)))
-	black_pieces.append(Pose(position=Point(x=start_x + 6*block_len, y=start_y + i * block_len, z=0.8)))
-	black_pieces.append(Pose(position=Point(x=start_x + 7*block_len, y=start_y + i * block_len, z=0.8)))
+        white_pieces.append(Pose(position=Point(x=start_x, y=start_y + i * block_len, z=0.8)))
+        white_pieces.append(Pose(position=Point(x=start_x + block_len, y=start_y + i * block_len, z=0.8)))
+        black_pieces.append(Pose(position=Point(x=start_x + 6*block_len, y=start_y + i * block_len, z=0.8)))
+        black_pieces.append(Pose(position=Point(x=start_x + 7*block_len, y=start_y + i * block_len, z=0.8)))
 
     rospy.init_node("ik_pick_and_place_demo")
     # Load Gazebo Models via Spawning Services
@@ -390,16 +390,16 @@ def main():
     # You may wish to replace these poses with estimates
     # from a perception node.
     block_poses.append(Pose(
-        position=Point(x=x_ref, y=y_ref + 3*block_len + block_len/4, z=-0.129),
+        position=Point(x=x_ref, y=y_ref + 3*block_len, z=-0.129),
         orientation=overhead_orientation))
     block_poses.append(Pose(
-        position=Point(x=x_ref + 3*block_len, y=y_ref + 3*block_len + block_len/4, z=-0.129),
+        position=Point(x=x_ref + 2*block_len, y=y_ref + 3*block_len, z=-0.129),
         orientation=overhead_orientation))
     block_poses.append(Pose(
-        position=Point(x=x_ref + 3*block_len, y=y_ref + 3*block_len + block_len/4, z=-0.129),
+        position=Point(x=x_ref + 2*block_len, y=y_ref + 3*block_len, z=-0.129),
         orientation=overhead_orientation))
     block_poses.append(Pose(
-        position=Point(x=x_ref, y=y_ref + 3*block_len + block_len/4, z=-0.129),
+        position=Point(x=x_ref, y=y_ref + block_len + block_len/4, z=-0.129),
         orientation=overhead_orientation))
 
     
