@@ -274,10 +274,6 @@ def load_gazebo_models(table_pose, white_squares, black_squares, white_pieces, b
 
 def delete_gazebo_models(white_squares, black_squares, white_pieces, black_pieces):
     """
-    # This will be called on ROS Exit, deleting Gazebo models
-    # Do not wait for the Gazebo Delete Model service, since
-    # Gazebo should already be running. If the service is not
-    # available since Gazebo has been killed, it is fine to error out
     for i in range(len(white_squares)):
         rospy.wait_for_service('/gazebo/delete_model')
         delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
@@ -314,19 +310,6 @@ def delete_gazebo_models(white_squares, black_squares, white_pieces, black_piece
     """
 
 def main():
-    """RSDK Inverse Kinematics Pick and Place Example
-
-    A Pick and Place example using the Rethink Inverse Kinematics
-    Service which returns the joint angles a requested Cartesian Pose.
-    This ROS Service client is used to request both pick and place
-    poses in the /base frame of the robot.
-
-    Note: This is a highly scripted and tuned demo. The object location
-    is "known" and movement is done completely open loop. It is expected
-    behavior that Baxter will eventually mis-pick or drop the block. You
-    can improve on this demo by adding perception and feedback to close
-    the loop.
-    """
     # defining models
     table_reference_frame="world"
     block_reference_frame = "world"
@@ -369,6 +352,7 @@ def main():
     rospy.wait_for_message("/robot/sim/started", Empty)
 
     limb = 'left'
+    limbR = 'right'
     hover_distance = 0.15 # meters
     # Starting Joint angles for left arm
     starting_joint_angles = {'left_w0': 0.6699952259595108,
