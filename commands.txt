@@ -4,3 +4,11 @@ accelerated graphics fix
     turn on accelerated graphics and then use
     echo "export SVGA_VGPU10=0" >> ~/.bashrc
 
+launch gazebo
+    roslaunch baxter_gazebo baxter_world.launch
+
+enable servos
+   rosrun baxter_tools enable_robot.py -e
+
+arm tuck
+    rosrun baxter_tools tuck_arms.py -u
