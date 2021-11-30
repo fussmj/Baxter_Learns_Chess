@@ -53,8 +53,13 @@ class Board:
 
         for i in range(8):
             self.squares.append([])
+
+
+
+
+            '''
             new_x = self.x_ref + i*board_len/8
             for j in range(8):
                 new_y = self.y_ref + j*board_len/8
                 self.squares.append(Pose(position=Point(x=new_x, y=new_y, z=-0.129), orientation=overhead_orientation))
-
+            '''
