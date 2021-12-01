@@ -1,6 +1,5 @@
+#!/usr/bin/env python
 from stockfish import Stockfish
-
-
 from boardClasses import Board, Square
 from moveClasses import pick, place
 
