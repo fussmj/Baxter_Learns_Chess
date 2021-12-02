@@ -31,22 +31,28 @@ game = Board(x_ref, y_ref, board_length)
 
 while(1):
     #white moves first. The text input will be replaced with camera move detection
+
+    white_move = input("move white\n")
+    '''
     white_move = input("make move\n")
     MESSAGE = white_move
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
+    '''
+
     old_pose = white_move[0:1]
     new_pose = white_move[2:3]
     game.move_piece(old_pose, new_pose)
 
 
     #black_move = stockfish.get_best_move_time(2000)
+    '''
     while True:
         data, addr = sock.recvfrom(1024)
     black_move = addr
-    old_pose = white_move[0:1]
-    new_pose = white_move[2:3]
+    '''
+    black_move = input("move black\n")
+    old_pose = black_move[0:1]
+    new_pose = black_move[2:3]
     game.move_piece(old_pose, new_pose)
 
-    print(black_move)
-    print(stockfish.get_board_visual())
