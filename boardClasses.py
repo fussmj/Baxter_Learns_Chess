@@ -50,7 +50,8 @@ class Board:
         self.x_ref = x_ref
         self.y_ref = y_ref
         hover_distance = 0.15
-        self.pnp = moveClasses.PickAndPlace('right', hover_distance)
+        limbR = 'right'
+        self.pnp = moveClasses.PickAndPlace(limbR, hover_distance)
         self.board_length = board_length
         self.square_length = self.board_length/8
         self.squares = []
