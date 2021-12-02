@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from boardClasses import Board, Square
-from moveClasses import pick, place
+from boardClasses import Board
+from moveClasses import PickAndPlace
 import socket
 
 #for sending
