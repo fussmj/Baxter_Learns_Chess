@@ -409,9 +409,8 @@ def main():
     #the board length in meters
     board_length = 0.46
     #the coordinates used for the gripper to reach the a1 spot on the chess board
-    x_ref = 0.801
-    y_ref = -0.470
-    z_ref = -0.170
+    x_ref = 0.726
+    y_ref = -0.677
     x_orientation = 0.955
     y_orientation = 0.292
     z_orientation = 0.0
@@ -441,9 +440,8 @@ def main():
             if match:
                 white_move = str(match.string)
                 old_pose = white_move[0] + white_move[1]
-                print(old_pose)
                 new_pose = white_move[2] + white_move[3]
-                game.move_piece(old_pose, new_pose)
+                game.move_player_piece(old_pose, new_pose)
                 move = parse(match.group(1)), parse(match.group(2))
             else:
                 # Inform the user when invalid input (e.g. "help") is entered
@@ -473,7 +471,7 @@ def main():
         print(black_move)
         old_pose = black_move[0] + black_move[1]
         new_pose = black_move[2] + black_move[3]
-        game.move_piece(old_pose, new_pose)
+        game.move_robot_piece(old_pose, new_pose)
         #print("My move:", render(119-move[0]) + render(119-move[1]))
         hist.append(hist[-1].move(move))
 

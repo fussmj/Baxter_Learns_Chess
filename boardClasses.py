@@ -32,20 +32,34 @@ import moveClasses
 
 class Piece:
 
-    def __init__(self, pose):
+    def __init__(self, pose, type):
         self.pose = pose
 
 
 class Square:
 
     def __init__(self, pose, x, y):
+        self.cal = int(pose[1])
         self.pose = pose
         self.x = x
         self.y = y
+        self.z_pawn = -0.183 - self.cal
+        self.z_king = -0.164 - self.cal
+        self.z_queen = -0.171 - self.cal
+        self.z_knight = -0.176 - self.cal
+        self.z_bishop = -0.181 - self.cal
+        self.z_rook = -0.176 - self.cal
+        self.heights = {'pawn': self.z_pawn,
+                        'king': self.z_king,
+                        'queen': self.z_queen,
+                        'knight': self.z_knight,
+                        'bishop': self.z_bishop,
+                        'rook': self.z_rook}
 
 class Board:
 
     def __init__(self, x_ref, y_ref, board_length):
+
         #the x and y ref variables should pertain to the coordinates that the gripper has to be in to reach spot a1 on the board
         self.x_ref = x_ref
         self.y_ref = y_ref
@@ -77,15 +91,25 @@ class Board:
             self.pieces.append(Piece(cols[i] + '7'))
             self.pieces.append(Piece(cols[i] + '8'))
 
-    def move_piece(self, old_pose, new_pose):
+    def move_player_piece(self, old_pose, new_pose):
+        for piece in self.pieces:
+            if piece.pose == new_pose:
+                del piece
+        for piece in self.pieces:
+            if piece.pose == old_pose:
+                piece.pose = new_pose
+
+
+    def move_robot_piece(self, old_pose, new_pose):
         for piece in self.pieces:
             if piece.pose == new_pose:
                 for square in self.squares:
                     if square.pose == piece.pose:
                         x_pose = square.x
                         y_pose = square.y
+                        z_pose = square.heights[piece.type]
                 taken_piece_pose = Pose(
-                    position=Point(x=x_pose, y=y_pose, z=-0.17),
+                    position=Point(x=x_pose, y=y_pose, z=z_pose),
                     orientation=self.overhead_orientation)
                 self.pnp.pick(taken_piece_pose)
                 self.pnp.place(self.dumpster_pose)
@@ -97,11 +121,13 @@ class Board:
                     if square.pose == old_pose:
                         old_x = square.x
                         old_y = square.y
+                        old_z = square.heights[piece.type]
                     elif square.pose == new_pose:
                         new_x = square.x
                         new_y = square.y
-                pick_pose = Pose(position=Point(x=old_x, y=old_y, z=-0.17), orientation=self.overhead_orientation)
-                place_pose = Pose(position=Point(x=new_x, y=new_y, z=-0.17), orientation=self.overhead_orientation)
+                        new_z = square.heights[piece.type]
+                pick_pose = Pose(position=Point(x=old_x, y=old_y, z=old_z), orientation=self.overhead_orientation)
+                place_pose = Pose(position=Point(x=new_x, y=new_y, z=new_z), orientation=self.overhead_orientation)
                 self.pnp.pick(pick_pose)
                 self.pnp.place(place_pose)
 
