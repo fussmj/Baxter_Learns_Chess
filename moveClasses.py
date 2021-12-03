@@ -148,3 +148,4 @@ class PickAndPlace(object):
         self.gripper_open()
         # retract to clear object
         self._retract()
+

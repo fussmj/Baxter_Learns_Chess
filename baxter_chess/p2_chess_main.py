@@ -406,14 +406,14 @@ def print_pos(pos):
 
 
 def main():
+
+
     #the board length in meters
     board_length = 0.46
     #the coordinates used for the gripper to reach the a1 spot on the chess board
     x_ref = 0.726
     y_ref = -0.677
-    x_orientation = 0.955
-    y_orientation = 0.292
-    z_orientation = 0.0
+
 
     #initialize the robot interface and other classes
     print("step 1")

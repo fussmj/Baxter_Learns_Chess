@@ -75,6 +75,16 @@ class Board:
                              y=0.999649402929,
                              z=0.00737916180073,
                              w=0.00486450832011)
+        self.camera_view_orientation = Quaternion(
+            x=-0.994,
+            y=-0.098,
+            z=-0.037,
+            w=-0.027
+        )
+        self.camera_view_x = 0.544
+        self.camera_view_y = -0.438
+        self.camera_view_z = 0.334
+        self.camera_view_pose = Pose(position=Point(x=self.camera_view_x, y=self.camera_view_y, z=-self.camera_view_z), orientation=self.camera_view_orientation)
         self.dumpster_pose = Pose(position=Point(x=x_ref - 0.2, y=y_ref - 0.3, z=-0.17), orientation=self.overhead_orientation)
 
         rows = ['1', '2', '3', '4', '5', '6', '7', '8']
@@ -130,6 +140,7 @@ class Board:
                 place_pose = Pose(position=Point(x=new_x, y=new_y, z=new_z), orientation=self.overhead_orientation)
                 self.pnp.pick(pick_pose)
                 self.pnp.place(place_pose)
+                self.pnp._servo_to_pose(self.camera_view_pose)
 
 
 
