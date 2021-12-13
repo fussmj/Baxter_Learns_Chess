@@ -5,9 +5,6 @@ from __future__ import print_function
 import re, sys, time
 from itertools import count
 from collections import namedtuple
-from boardClasses import Board
-from moveClasses import PickAndPlace
-import socket
 
 ###############################################################################
 # Piece-Square tables. Tune these to change sunfish's behaviour
@@ -406,23 +403,6 @@ def print_pos(pos):
 
 
 def main():
-    
-
-    #the board length in meters
-    board_length = 0.46
-    #the coordinates used for the gripper to reach the a1 spot on the chess board
-    x_ref = 0.75
-    y_ref = -0.5
-
-
-    #initialize the robot interface and other classes
-    
-    game = Board(x_ref, y_ref, board_length)
-   
-
-    #calibrate the board position
-    #game.calibrate_board_postition()
-
     hist = [Position(initial, 0, (True,True), (True,True), 0, 0)]
     searcher = Searcher()
     while True:
@@ -435,26 +415,8 @@ def main():
         # We query the user until she enters a (pseudo) legal move.
         move = None
         while move not in hist[-1].gen_moves():
-            #game.move_to_overhead()
-            game.go_to_camera_view()
-            time.sleep(6)
-            dir = '/home/gle-3271-nix01/baxter_ws/src/baxter_examples/scripts/baxter_chess/Images/saved_patches/' 
-            game.take_picture(dir)
-            
-            
-            raw_input('make your move and then press enter: ')
-            dir = '/home/gle-3271-nix01/baxter_ws/src/baxter_examples/scripts/baxter_chess/Images/new_saved_patches/'
-            game.take_picture(dir)
-            time.sleep(4)
-            white_move = game.find_player_move()
-            match = re.match('([a-h][1-8])'*2, white_move)
-            #match = re.match('([a-h][1-8])'*2, raw_input('make your move and then press enter: '))
-           
+            match = re.match('([a-h][1-8])'*2, raw_input('Your move: '))
             if match:
-                #white_move = str(match.string)
-                old_pose = white_move[0] + white_move[1]
-                new_pose = white_move[2] + white_move[3]
-                game.move_player_piece(old_pose, new_pose)
                 move = parse(match.group(1)), parse(match.group(2))
             else:
                 # Inform the user when invalid input (e.g. "help") is entered
@@ -480,17 +442,9 @@ def main():
 
         # The black player moves from a rotated position, so we have to
         # 'back rotate' the move before printing it.
-        black_move = str(render(119-move[0]) + render(119-move[1]))
-        print(black_move)
-        old_pose = black_move[0] + black_move[1]
-        new_pose = black_move[2] + black_move[3]
-        game.move_robot_piece(old_pose, new_pose)
-        
-        
-        #print("My move:", render(119-move[0]) + render(119-move[1]))
+        print("My move:", render(119-move[0]) + render(119-move[1]))
         hist.append(hist[-1].move(move))
 
 
 if __name__ == '__main__':
     main()
-
